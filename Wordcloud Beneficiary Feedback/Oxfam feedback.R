@@ -1,0 +1,26 @@
+library("NLP")
+library("tm")
+library("SnowballC")
+library("RColorBrewer")
+library("wordcloud")
+
+docs <- VCorpus(VectorSource(readLines("~/Box Sync/R Analysis/fooodsurvey.txt", encoding = "UTF-8")))
+docs <- tm_map(docs, content_transformer(tolower))
+toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+docs <- tm_map(docs, toSpace, "/")
+docs <- tm_map(docs, toSpace, "@")
+docs <- tm_map(docs, toSpace, "\\|")
+docs = tm_map(docs, removeNumbers)
+docs = tm_map(docs, removeWords, stopwords("english"))
+docs <- tm_map(docs, removePunctuation)
+docs <- tm_map(docs, stripWhitespace)
+dtm = TermDocumentMatrix(docs)
+m = as.matrix(dtm)
+v = sort(rowSums(m),decreasing=TRUE)
+d = data.frame(word = names(v),freq=v)
+head(d, 15)
+set.seed(1234)
+wc <- wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+                max.words=200, random.order=FALSE, rot.per=0.5, 
+                colors=brewer.pal(10, "Dark2"))
+
